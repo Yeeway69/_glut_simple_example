@@ -10,7 +10,7 @@ using vec3 = glm::dvec3;
 
 static const ivec2 WINDOWS_SIZE(512, 512);
 
-static void draw_triangle(const u8vec4& color, const const vec3& center, double size) {
+static void draw_triangle(const u8vec4& color, const vec3& center, double size) {
 	glColor4ub(color.r, color.g, color.b, color.a);
 	glBegin(GL_TRIANGLES);
 	glVertex3d(center.x, center.y + size, center.z);
