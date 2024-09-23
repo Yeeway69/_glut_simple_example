@@ -4,13 +4,24 @@
 #include <GL/freeglut.h>
 using namespace std;
 
+using u8vec4 = glm::u8vec4;
 using ivec2 = glm::ivec2;
-using vec3 = glm::vec3;
+using vec3 = glm::dvec3;
 
 static const ivec2 WINDOWS_SIZE(512, 512);
 
+static void draw_triangle(const u8vec4& color, const const vec3& center, double size) {
+	glColor4ub(color.r, color.g, color.b, color.a);
+	glBegin(GL_TRIANGLES);
+	glVertex3d(center.x, center.y + size, center.z);
+	glVertex3d(center.x - size, center.y - size, center.z);
+	glVertex3d(center.x + size, center.y - size, center.z);
+	glEnd();
+}
+
 static void display_func() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	draw_triangle( u8vec4(255, 0, 0, 255), vec3(0.0, 0.0, 0.0), 0.5);
 	glutSwapBuffers();
 }
 
