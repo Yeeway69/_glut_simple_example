@@ -8,7 +8,7 @@ using u8vec4 = glm::u8vec4;
 using ivec2 = glm::ivec2;
 using vec3 = glm::dvec3;
 
-static const ivec2 WINDOWS_SIZE(512, 512);
+static const ivec2 WINDOW_SIZE(512, 512);
 
 static void draw_triangle(const u8vec4& color, const vec3& center, double size) {
 	glColor4ub(color.r, color.g, color.b, color.a);
@@ -34,7 +34,7 @@ int main(int argc, char* argv[]) {
 	// Iniit window and context
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
-	glutInitWindowSize(WINDOWS_SIZE.x, WINDOWS_SIZE.y);
+	glutInitWindowSize(WINDOW_SIZE.x, WINDOW_SIZE.y);
 	glutCreateWindow("Glut Simple Example");
 
 	// Init OpenGL
