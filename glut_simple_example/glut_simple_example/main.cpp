@@ -42,6 +42,7 @@ int main(int argc, char* argv[]) {
 
 	// Set Glut callbacks
 	glutDisplayFunc(display_func);
+	glutIdleFunc(glutPostRedisplay);
 
 	// Enter glut main loop
 	glutMainLoop();
