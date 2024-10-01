@@ -5,18 +5,30 @@
 #include "Camera.h"
 using namespace std;
 
+struct Triangle {
+	Transform transform;
+	glm::u8vec3 color;
+	double size = 0.5;
+
+	void draw() const {
+		glPushMatrix();
+		glMultMatrixd(&transform.mat()[0][0]);
+		glColor3ub(color.r, color.g, color.b);
+		glBegin(GL_TRIANGLES);
+		glVertex2d( 0, size);
+		glVertex2d( - size, - size);
+		glVertex2d(size, - size);
+		glEnd();
+		glPopMatrix();
+	}
+};
+
 static Camera camera;
+static Triangle red_triangle;
+static Triangle green_triangle;
+static Triangle blue_triangle;
 
-static void draw_triangle(const glm::u8vec3& color, const vec3& center, double size) {
-	glColor3ub(color.r, color.g, color.b);
-	glBegin(GL_TRIANGLES);
-	glVertex3d(center.x, center.y + size, center.z);
-	glVertex3d(center.x - size, center.y - size, center.z);
-	glVertex3d(center.x + size, center.y - size, center.z);
-	glEnd();
-}
-
-static void draw_floorGrid(int size, double step) {
+static void drawFloorGrid(int size, double step) {
 	glColor3ub(0, 0, 0);
 	glBegin(GL_LINES);
 	for (double i = -size; i <= size; i += step) {
@@ -34,10 +46,10 @@ static void display_func() {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixd(&camera.view()[0][0]);
 
-	draw_floorGrid(16, 0.25);
-	draw_triangle( Colors::Red, vec3(-1, 0.25, 0), 0.5);
-	draw_triangle(Colors::Green, vec3(0, 0.5, 0.25), 0.5);
-	draw_triangle(Colors::Blue, vec3(1, -0.5, -0.25), 0.5);
+	drawFloorGrid(16, 0.25);
+	red_triangle.draw();
+	green_triangle.draw();
+	blue_triangle.draw();
 
 	glutSwapBuffers();
 }
@@ -73,6 +85,14 @@ static void mouseWheel_func(int wheel, int direction, int x, int y) {
 	camera.transform().translate( vec3(0, 0, direction * 0.1));
 }
 
+static void idle_func() {
+	//animate triangles
+	red_triangle.transform.rotate(0.001, vec3(0, 1, 0));
+	green_triangle.transform.rotate(0.001, vec3(1, 0, 0));
+	blue_triangle.transform.rotate(0.001, vec3(0, 0, 1));
+	glutPostRedisplay();
+}
+
 int main(int argc, char* argv[]) {
 	// Iniit window and context
 	glutInit(&argc, argv);
@@ -87,9 +107,17 @@ int main(int argc, char* argv[]) {
 	camera.transform().pos() = vec3(0, 1, 4);
 	camera.transform().rotate(glm::radians(180.0), vec3(0, 1, 0));
 
+	// Init triangles
+	red_triangle.transform.pos() = vec3(0, 1, 0);
+	red_triangle.color = glm::u8vec3(255, 0, 0);
+	green_triangle.transform.pos() = vec3(1, 1, 0);
+	green_triangle.color = glm::u8vec3(0, 255, 0);
+	blue_triangle.transform.pos() = vec3(0, 1, 1);
+	blue_triangle.color = glm::u8vec3(0, 0, 255);
+
 	// Set Glut callbacks
 	glutDisplayFunc(display_func);
-	glutIdleFunc(glutPostRedisplay);
+	glutIdleFunc(idle_func);
 	glutReshapeFunc(reshape_func);
 	glutMouseWheelFunc(mouseWheel_func);
 
