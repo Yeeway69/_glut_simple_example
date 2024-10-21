@@ -3,41 +3,44 @@
 #include <glm/glm.hpp>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-
+#include <IL/il.h>
+#include <IL/ilu.h>
 #include "Camera.h"
 #include <vector>
+#include "Mesh.h"
 using namespace std;
 
 struct Triangle {
 	Transform transform;
 	glm::u8vec3 color;
-	double size = 0.5;
-	unsigned int texture_id;
+	Mesh mesh;
 
-	void draw() const {
+	void initMesh(double size) {
+		const glm::vec3 vertices[] = {
+			glm::vec3(-size, -size, 0),
+			glm::vec3(size, -size, 0),
+			glm::vec3(0, size, 0)
+		};
 
-		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, texture_id);
+		glm::u8vec3 colors[] = {
+			glm::u8vec3(255, 0, 0),
+			glm::u8vec3(0, 255, 0),
+			glm::u8vec3(0, 0, 255)
+		};
+		const unsigned int indices[] = { 0, 1, 2 };
+		mesh.load(vertices, 3, indices, 3);
+		mesh.loadColors(colors, 3);
+	}
 
+	void draw()
+	{
 		glPushMatrix();
 		glMultMatrixd(&transform.mat()[0][0]);
 		glColor3ub(color.r, color.g, color.b);
-		glBegin(GL_TRIANGLES);
-		glTexCoord2d(0.5, 0.0);
-		glVertex2d( 0, size);
-
-		glTexCoord2d(0.0, 1.0);
-		glVertex2d( - size, - size);
-
-		glTexCoord2d(1.0, 1.0);
-		glVertex2d(size, - size);
-
-
-		glEnd();
+		mesh.draw();
 		glPopMatrix();
-
-		glDisable(GL_TEXTURE_2D);
 	}
+
 };
 
 
@@ -151,7 +154,7 @@ static void display_func() {
 	green_triangle.draw();
 	blue_triangle.draw();
 
-	cube.draw();
+	/*cube.draw();*/
 
 	glutSwapBuffers();
 }
@@ -189,9 +192,9 @@ static void mouseWheel_func(int wheel, int direction, int x, int y) {
 
 static void idle_func() {
 	//animate triangles
-	red_triangle.transform.rotate(0.001, vec3(0, 1, 0));
-	green_triangle.transform.rotate(0.001, vec3(1, 0, 0));
-	blue_triangle.transform.rotate(0.001, vec3(0, 0, 1));
+	red_triangle.transform.rotate(0.0001, vec3(0, 1, 0));
+	green_triangle.transform.rotate(0.0001, vec3(1, 0, 0));
+	blue_triangle.transform.rotate(0.0001, vec3(0, 0, 1));
 
 	cube.transform.rotate(0.001, vec3(0.2, 0.5, 0.1));
 	glutPostRedisplay();
@@ -218,22 +221,24 @@ int main(int argc, char* argv[]) {
 	green_triangle.color = glm::u8vec3(0, 255, 0);
 	blue_triangle.transform.pos() = vec3(0, 1, 1);
 	blue_triangle.color = glm::u8vec3(0, 0, 255);
+	red_triangle.initMesh(1);
+
 
 	// Init texture
-	initializeTexture();
-	unsigned int texture_id;
-	glGenTextures(1, &texture_id);
-	glBindTexture(GL_TEXTURE_2D, texture_id);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture.front().size(), texture.size(), 0, GL_RGB, GL_UNSIGNED_BYTE, texture.front().data());
-	glGenerateMipmap(GL_TEXTURE_2D);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	red_triangle.texture_id = texture_id;
-	green_triangle.texture_id = texture_id;
-	blue_triangle.texture_id = texture_id;
 
+	ilInit();
+	iluInit();
+	auto il_img_id = ilGenImage();
+	ilBindImage(il_img_id);
+	ilLoadImage("Lenna.jpeg");
+	auto img_width = ilGetInteger(IL_IMAGE_WIDTH);
+	auto img_height = ilGetInteger(IL_IMAGE_HEIGHT);
+	auto img_bpp = ilGetInteger(IL_IMAGE_BPP);
+	auto img_format = ilGetInteger(IL_IMAGE_FORMAT);
+	auto img_data = ilGetData();
+
+
+	
 	// Init cube
 	cube.initBuffers();
 
